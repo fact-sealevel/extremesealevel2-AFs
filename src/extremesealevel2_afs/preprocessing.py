@@ -4,7 +4,7 @@ t(dot)h(dot)j(dot)hermans@uu(dot)nl
 """
 import numpy as np
 import pandas as pd
-from gesla import GeslaDataset
+from extremesealevel2_afs.gesla import GeslaDataset
 import os
 from copy import deepcopy
 import xarray as xr

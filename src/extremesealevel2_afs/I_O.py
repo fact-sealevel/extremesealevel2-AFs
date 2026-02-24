@@ -8,8 +8,9 @@ import xarray as xr
 import pandas as pd
 import yaml
 import os
-from utils import mindist, kmdist
 from tqdm import tqdm
+
+from extremesealevel2_afs.utils import mindist, kmdist
 
 def load_config(path_to_config):
     '''load projectESL configuration from "cfgpath" '''

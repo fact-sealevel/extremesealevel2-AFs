@@ -2,12 +2,12 @@ import xarray as xr
 import pandas as pd
 import os
 import numpy as np
-from I_O import open_input_locations, get_refFreqs, lazy_output_to_ds
+from extremesealevel2_afs.I_O import open_input_locations, get_refFreqs, lazy_output_to_ds
 import argparse
 import dask
-from esl_analysis import multivariate_normal_gpd_samples_from_covmat, get_return_curve_gpd
-from projecting import compute_AFs, compute_AF_timing
-from utils import if_scalar_to_list
+from extremesealevel2_afs.esl_analysis import multivariate_normal_gpd_samples_from_covmat, get_return_curve_gpd
+from extremesealevel2_afs.projecting import compute_AFs, compute_AF_timing
+from extremesealevel2_afs.utils import if_scalar_to_list
 from dask.distributed import LocalCluster
 
 # Do not warn about chained assignments
@@ -69,7 +69,16 @@ def compute_projectESL_output(loc,scale,shape,rate,cov,mhhw,f,below_threshold,n_
     return z_hist_quantiles,z_fut_quantiles,af_quantiles,max_af,af_timing_quantiles,f_timing_quantiles
 
 
-def project_ESLs_lazily(esl_statistics,f,below_threshold,n_samples,refFreqs,input_locations,out_qnts,target_years,target_AFs,target_freqs):
+def project_ESLs_lazily(esl_statistics,
+                        f,
+                        below_threshold,
+                        n_samples,
+                        refFreqs,
+                        input_locations,
+                        out_qnts,
+                        target_years,
+                        target_AFs,
+                        target_freqs):
     target_years = if_scalar_to_list(target_years)
     target_AFs = if_scalar_to_list(target_AFs)
     target_freqs = if_scalar_to_list(target_freqs)
@@ -108,6 +117,72 @@ def project_ESLs_lazily(esl_statistics,f,below_threshold,n_samples,refFreqs,inpu
         lazy_results = np.append(lazy_results,lazy_result)
     
     return lazy_results
+
+def project_ESL_runner(quantile_min,
+                        quantile_max,
+                        quantile_step,
+                        target_years,
+                        target_AFs,
+                        target_freqs,
+                        reffreq_data,
+                        reffreq_data_file,
+                        input_locations,
+                        esl_statistics_ds,
+                        output_fname,
+                        f,
+                        below_threshold,
+                        n_samples,
+                        ):
+    out_qnts = np.arange(quantile_min,
+                         quantile_max+quantile_step,
+                         quantile_step)
+    if target_years != 'none':
+        target_years = np.array(
+            str(target_years).split(',')).astype('int')
+    else:
+        target_years = []
+    
+    if target_AFs != 'none':
+        target_AFs = np.array(
+            str(target_AFs).split(',')).astype('float')
+    else:
+        target_AFs = []
+    cluster = LocalCluster()
+    client = cluster.get_client()
+
+    #f = 10**np.linspace(-6,2,num=1001) #input frequencies to compute return heights for
+    #f = np.append(f,np.arange(101,183))
+
+    if np.array(reffreq_data).dtype=='int' or np.array(reffreq_data).dtype=='float':
+        reffreqs = get_refFreqs(reffreq_data,input_locations,esl_statistics_ds) 
+    else:
+        reffreqs = get_refFreqs(reffreq_data,
+                                input_locations,
+                                esl_statistics_ds,
+                                reffreq_data_file
+                                )
+    output = dask.compute(*project_ESLs_lazily(esl_statistics_ds,
+                                               f,
+                                               below_threshold,
+                                               n_samples,
+                                               reffreqs,
+                                               input_locations,
+                                               out_qnts,
+                                               target_years,
+                                               target_AFs,
+                                               target_freqs))
+    output_ds = lazy_output_to_ds(output,
+                                       f,
+                                       out_qnts,
+                                       esl_statistics_ds,
+                                       target_years,
+                                       target_AFs,
+                                       target_freqs)
+    output_ds['refFreq'] = (['locations'],reffreqs)
+
+    output_ds.to_netcdf(output_fname,
+                        mode='w',
+                        )
 
 if __name__ == "__main__":
     # Initialize the command-line argument parser

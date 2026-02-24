@@ -7,12 +7,12 @@ import numpy.matlib
 import pandas as pd
 import xarray as xr
 from scipy.stats import genpareto
-from utils import mindist
+from extremesealevel2_afs.utils import mindist
 from tqdm import tqdm
-from preprocessing import extract_GESLA2_locations, extract_GESLA3_locations, ingest_GESLA2_files, ingest_GESLA3_files 
-from preprocessing import detrend_gesla_dfs, deseasonalize_gesla_dfs, subtract_amean_from_gesla_dfs
-from preprocessing import detrend_ds, deseasonalize_ds, subtract_amean_from_ds
-from I_O import open_gtsm_waterlevels
+from extremesealevel2_afs.preprocessing import extract_GESLA2_locations, extract_GESLA3_locations, ingest_GESLA2_files, ingest_GESLA3_files 
+from extremesealevel2_afs.preprocessing import detrend_gesla_dfs, deseasonalize_gesla_dfs, subtract_amean_from_gesla_dfs
+from extremesealevel2_afs.preprocessing import detrend_ds, deseasonalize_ds, subtract_amean_from_ds
+from extremesealevel2_afs.I_O import open_gtsm_waterlevels
 import os
 
 def ESL_stats_from_gtsm_dmax(gtsm_path,input_locations,preproc_settings,match_dist_limit,output_dir=None):
@@ -68,7 +68,14 @@ def ESL_stats_from_gtsm_dmax(gtsm_path,input_locations,preproc_settings,match_di
     return esl_statistics
 
 
-def ESL_stats_from_raw_GESLA(gesla_version,path_to_gesla,input_locations,preproc_settings,match_dist_limit,output_dir=None):
+def ESL_stats_from_raw_GESLA(
+    gesla_version,
+    path_to_gesla,
+    input_locations,
+    preproc_settings,
+    match_dist_limit,
+    output_dir
+    ):
     ''' For input_locations sites, try to find nearest GESLA record within "maxdist" that fulfills the criteria for being included set in "cfg".'''    
 
     #get GESLA locations
@@ -78,9 +85,9 @@ def ESL_stats_from_raw_GESLA(gesla_version,path_to_gesla,input_locations,preproc
         (station_names, station_lats, station_lons, station_filenames) = extract_GESLA3_locations(path_to_gesla,preproc_settings['min_yrs'])
     else:
         raise Exception('Data source not recognized.')
-    
-    min_idx = [mindist(x,y,station_lats,station_lons,match_dist_limit) for x,y in zip(input_locations.lat.values, input_locations.lon.values)] #sites within maximum distance from input_locations points
 
+    min_idx = [mindist(x,y,station_lats,station_lons,match_dist_limit) for x,y in zip(input_locations.lat.values, input_locations.lon.values)] #sites within maximum distance from input_locations points
+    print("min idx: ", min_idx)
     matched_filenames = []
     sites_with_esl = []
     for i in np.arange(len(input_locations.locations)): #loop over input_locations sites
