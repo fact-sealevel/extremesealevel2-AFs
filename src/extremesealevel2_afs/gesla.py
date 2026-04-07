@@ -1,7 +1,7 @@
 import pandas as pd
 import xarray as xr
 import warnings
-
+import os
 #python script downloaded from https://gesla787883612.wordpress.com/downloads/
 #TH: adapted to fix some bugs
 
@@ -29,15 +29,21 @@ class GeslaDataset:
             .lower()
             for c in self.meta.columns
         ]
-        self.meta.loc[:, "start_date_time"] = [
-            pd.to_datetime(d,format='mixed') for d in self.meta.loc[:, "start_date_time"]
-        ]
-        self.meta.loc[:, "end_date_time"] = [
-            pd.to_datetime(d,format='mixed') for d in self.meta.loc[:, "end_date_time"]
-        ]
+        try:
+            self.meta.loc[:, "start_date_time"] = [
+                 d for d in self.meta.loc[:, "start_date_time"]
+            ]
+        except Exception as e:
+            print('didnt format start_date_time correctly: ', e)
+        try:
+            self.meta.loc[:, "end_date_time"] = [
+                #pd.to_datetime(d,format='mixed') for
+               d for d in self.meta.loc[:, "end_date_time"]
+            ]
+        except Exception as e:
+            print('didnt format end date time correctly...',e)
         self.data_path = data_path
         self.meta["filename"] = self.construct_filenames()
-
     def construct_filenames(self):
         return self.meta.apply(
             lambda x: x.loc["site_name"].lower()
@@ -64,26 +70,29 @@ class GeslaDataset:
             pandas.Series: record metadata. This return can be excluded by
                 setting return_meta=False.
         """
-        with open(self.data_path + filename, "r") as f:
+        full_path = os.path.join(self.data_path, filename)
+
+        #with open(self.data_path + filename, "r") as f:
+        with open(full_path, "r") as f:
             data = pd.read_csv(
                 f,
                 skiprows=41,
                 names=["date", "time", "sea_level", "qc_flag", "use_flag"],
                 sep="\s+",
-                parse_dates=[[0, 1]],
-                index_col=0,
+                #parse_dates=[[0, 1]],
+                #index_col=0,
             )
+            data["date_time"] = pd.to_datetime(data["date"] + " " + data["time"])
+            data = data.set_index("date_time").drop(columns=["date", "time"])
             if data.index[data.index.duplicated()].size > 0:
                 #data = data.drop_duplicates() #this removes any duplicate row, rather than duplicate timestamps
                 data = data[~data.index.duplicated(keep='first')]
-                
+
             if return_meta:
                 try:
                     meta = self.meta.loc[self.meta['file_name'] == filename].iloc[0]
                 except:
                     meta = self.meta.loc[self.meta.filename == filename].iloc[0]
-                #print(self.meta.filename[2495])
-                #meta = self.meta.loc[self.meta.filename == filename].iloc[0]
                 return data, meta
             else:
                 return data

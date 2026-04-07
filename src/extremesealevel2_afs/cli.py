@@ -1,20 +1,28 @@
-import click 
+import click
 import logging
-import os 
+import os
 import numpy as np
-
+import pandas as pd
+import xarray as xr
+import dask
 from extremesealevel2_afs.esl2_afs_preprocess import (
     preprocess
 )
 from extremesealevel2_afs.I_O import (
-    get_refFreqs,
+    get_refFreqs,open_input_locations,
 )
 
-from extremesealevel2_afs.extremesealevel2_afs_fit import (
+#from extremesealevel2_afs.extremesealevel2_afs_fit import (
+#    get_ESL_statistics,
+#)
+from extremesealevel2_afs.esl2_fit import (
     get_ESL_statistics,
 )
 
-from extremesealevel2_afs.extremesealevel2_afs_project import (
+#from extremesealevel2_afs.extremesealevel2_afs_project import (
+#    project_ESL_runner
+#
+from extremesealevel2_afs.esl2_project import (
     project_ESL_runner
 )
 
@@ -100,7 +108,7 @@ logging.basicConfig(level=logging.INFO)
 )
 @click.option(
     "--reffreq-data",
-    type=float,
+    type=str,
     default=0.01,
     show_default=True,
     help="Which protection level frequencies data to use",
@@ -122,17 +130,17 @@ logging.basicConfig(level=logging.INFO)
     type=str,
     help="Directory containing requested ESL data.",
 )
-#@click.option(
-#    "--pipeline-id",
-#    type=str,
-#    help="Unique identifier for this instance of the module.",
-#)
-#@click.option(
-#    "--esl-fit-statistics-file",
-#    type=str,
-#    help="Path to output ESL statistics file.",
-#    required=True,
-#)
+@click.option(
+    "--pipeline-id",
+    type=str,
+    help="Unique identifier for this instance of the module.",
+)
+@click.option(
+    "--esl-fit-statistics-file",
+    type=str,
+    help="Path to output ESL statistics file.",
+        required=True,
+)
 @click.option(
     "--quantile-min",
     type=float,
@@ -157,7 +165,7 @@ logging.basicConfig(level=logging.INFO)
 @click.option(
     "--target-years",
     type=str,
-    default="2100",
+    default="2050,2100",
     show_default=True,
     help="Comma-delimited list of years to project AFs for (set to none for no output).",
 )
@@ -191,31 +199,33 @@ logging.basicConfig(level=logging.INFO)
     help="Directory to save output files.",
 )
 def main(min_years,
-         resample_freq,
-         deseasonalize,
-         detrend,
-         subtract_amean,
-         match_lim,
-         gpd_pot_threshold,
-         decluster_window,
-         decluster_method,
-         nsamps,
-         total_localsl_file,
-         esl_data,
-         esl_data_path,
-         quantile_min,
-         quantile_max,
-         quantile_step,
-         reffreq_data,
-         reffreq_data_file,
-         target_years,
-         target_afs,
-         target_freqs,
-         output_fname,
-         below_threshold,
-         output_dir,
+    pipeline_id,
+    esl_fit_statistics_file,
+    resample_freq,
+    deseasonalize,
+    detrend,
+    subtract_amean,
+    match_lim,
+    gpd_pot_threshold,
+    decluster_window,
+    decluster_method,
+    nsamps,
+    total_localsl_file,
+    esl_data,
+    esl_data_path,
+    quantile_min,
+    quantile_max,
+    quantile_step,
+    reffreq_data,
+    reffreq_data_file,
+    target_years,
+    target_afs,
+    target_freqs,
+    output_fname,
+    below_threshold,
+    output_dir
          ):
-    
+
 
     click.echo("Hello from extremesealevel2-AFs!")
 
@@ -234,50 +244,50 @@ def main(min_years,
         #esl_data,
         #esl_data_path,
     )
-
+    click.echo(preproc_settings.keys())
+    click.echo(type(input_locations))
+    message = f"pre proc settings min years: {preproc_settings['min_yrs']}"
+    click.echo(message)
 
     #esl_data, esl_data_path, total_localsl_file, preproc_settings, nsamps, f = preprocess_tuple
-    f = 10**np.linspace(-6,2,num=1001) #input frequencies to compute return heights for
-    f = np.append(f,np.arange(101,183))
 
-    #input_locations = open_input_locations(total_localsl_file,nsamps)
-
-    #call fit
-    #extremesl_fit = get_ESL_statistics(esl_data = esl_data,
-    #                                   esl_data_path = esl_data_path,
-    #                                   input_locations = input_locations,
-    #                                   match_dist_limit=match_lim,
-    #                                   preproc_settings = preproc_settings,
-    #                                   n_samples = nsamps,
-    #                                   f = f,
-    #                                   )
-    
     #this is the same as the fit step (?)
     message1 = f"esl data {esl_data}"
     click.echo(message1)
 
-    message2 = f"esl data path  {esl_data_path}"
-    click.echo(message2)
-    esl_statistics_ds = get_ESL_statistics(esl_data=esl_data,
-                                      path_to_data=esl_data_path,
-                                      input_locations=input_locations,
-                                      match_dist_limit=match_lim,
-                                      output_dir=output_dir,
-                                      preproc_settings=preproc_settings,
-                                      n_samples=nsamps,
-                                      f=f)
-    print("thru esl staats step")                
+    f= 10**np.linspace(-6,2,num=1001) #input frequencies to compute return heights for
+    f=np.append(f,np.arange(101,183))
+
+    #input_locations = open_input_locations(total_localsl_file,nsamps)
+    #Create fit ds
+    extremesl_fit = get_ESL_statistics(
+        esl_data = esl_data,
+        path_to_data = esl_data_path,
+        input_locations = input_locations,
+        match_dist_limit = match_lim,
+        preproc_settings = preproc_settings,
+        n_samples = nsamps,
+        f = f,
+        output_dir = output_dir)
+    #write fit ds
+    extremesl_fit.to_netcdf(
+        esl_fit_statistics_file,
+        mode='w')
+
+
+    target_freqs = np.array(str(target_freqs).split(',')).astype('float')
+
     project_ESL_runner(
         quantile_min=quantile_min,
         quantile_max=quantile_max,
         quantile_step=quantile_step,
         target_years=target_years,
-        target_AFs=target_AFs,
+        target_AFs=target_afs,
         target_freqs=target_freqs,
         reffreq_data=reffreq_data,
         reffreq_data_file=reffreq_data_file,
         input_locations=input_locations,
-        esl_statistics_ds=esl_statistics_ds,
+        esl_statistics_ds=extremesl_fit,
         output_fname=output_fname,
         f=f,
         below_threshold=below_threshold,
