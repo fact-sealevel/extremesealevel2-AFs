@@ -24,3 +24,11 @@ extremesealevel2-afs = "extremesealevel2_afs.cli:main"
 [build-system]
 requires = ["uv_build>=0.8.11,<0.9.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.10",
+]
+
+[tool.ruff]
+exclude = [".claude"]

@@ -1,34 +1,24 @@
 import click
 import logging
-import os
 import numpy as np
-import pandas as pd
-import xarray as xr
-import dask
-from extremesealevel2_afs.esl2_afs_preprocess import (
-    preprocess
-)
-from extremesealevel2_afs.I_O import (
-    get_refFreqs,open_input_locations,
-)
+from extremesealevel2_afs.esl2_afs_preprocess import preprocess
 
-#from extremesealevel2_afs.extremesealevel2_afs_fit import (
+# from extremesealevel2_afs.extremesealevel2_afs_fit import (
 #    get_ESL_statistics,
-#)
+# )
 from extremesealevel2_afs.esl2_fit import (
     get_ESL_statistics,
 )
 
-#from extremesealevel2_afs.extremesealevel2_afs_project import (
+# from extremesealevel2_afs.extremesealevel2_afs_project import (
 #    project_ESL_runner
 #
-from extremesealevel2_afs.esl2_project import (
-    project_ESL_runner
-)
+from extremesealevel2_afs.esl2_project import project_ESL_runner
 
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 @click.command()
 @click.option(
@@ -41,7 +31,7 @@ logging.basicConfig(level=logging.INFO)
 @click.option(
     "--resample-freq",
     type=str,
-    default='D_max',
+    default="D_max",
     show_default=True,
     help="Frequency to resample the raw data to prior to ESL analysis.",
 )
@@ -50,56 +40,56 @@ logging.basicConfig(level=logging.INFO)
     type=bool,
     default=True,
     show_default=True,
-    help="Boolean to indicate whehter to remove mean seasonal cycle prior to ESL analysis."
+    help="Boolean to indicate whehter to remove mean seasonal cycle prior to ESL analysis.",
 )
 @click.option(
     "--detrend",
     type=bool,
     default=True,
     show_default=True,
-    help="Boolean to indicate whether to remove linear trend prior to ESL analysis."
+    help="Boolean to indicate whether to remove linear trend prior to ESL analysis.",
 )
 @click.option(
     "--subtract-amean",
     type=bool,
     default=False,
     show_default=True,
-    help="Boolean to indicate whether to remove annual means prior to ESL analysis.")
-
+    help="Boolean to indicate whether to remove annual means prior to ESL analysis.",
+)
 @click.option(
     "--match-lim",
     type=float,
     default=10.0,
     show_default=True,
-    help="Radius around requested locations to find a matching tide gauge in GESLA database (km)."
+    help="Radius around requested locations to find a matching tide gauge in GESLA database (km).",
 )
 @click.option(
     "--gpd-pot-threshold",
     type=float,
     default=99.0,
     show_default=True,
-    help="Percentile for GPD analysis."
+    help="Percentile for GPD analysis.",
 )
 @click.option(
     "--decluster-window",
     type=int,
     default=3,
     show_default=True,
-    help="Maximum number of days that define a cluster for extreme events."
+    help="Maximum number of days that define a cluster for extreme events.",
 )
 @click.option(
     "--decluster-method",
     type=str,
-    default='rolling_max',
+    default="rolling_max",
     show_default=True,
-    help="Method to use for declustering peaks."
+    help="Method to use for declustering peaks.",
 )
 @click.option(
     "--nsamps",
     type=int,
     default=2000,
     show_default=True,
-    help="Number of samples to draw."
+    help="Number of samples to draw.",
 )
 @click.option(
     "--total-localsl-file",
@@ -121,9 +111,9 @@ logging.basicConfig(level=logging.INFO)
 @click.option(
     "--esl-data",
     type=str,
-    default='gesla3',
+    default="gesla3",
     show_default=True,
-    help="Type of data used for the ESL analysis."
+    help="Type of data used for the ESL analysis.",
 )
 @click.option(
     "--esl-data-path",
@@ -139,7 +129,7 @@ logging.basicConfig(level=logging.INFO)
     "--esl-fit-statistics-file",
     type=str,
     help="Path to output ESL statistics file.",
-        required=True,
+    required=True,
 )
 @click.option(
     "--quantile-min",
@@ -172,9 +162,9 @@ logging.basicConfig(level=logging.INFO)
 @click.option(
     "--target-AFs",
     type=str,
-    default = 20,
+    default=20,
     show_default=True,
-    help = "Comma-delimited list to AFs to project timing for (set to none for no output).",
+    help="Comma-delimited list to AFs to project timing for (set to none for no output).",
 )
 @click.option(
     "--target-freqs",
@@ -190,7 +180,7 @@ logging.basicConfig(level=logging.INFO)
 @click.option(
     "--below-threshold",
     type=str,
-    default = 'mhhw',
+    default="mhhw",
     help="How to model events below the GPD threshold (default= log linear extrapolation to mhhw).",
 )
 @click.option(
@@ -198,7 +188,8 @@ logging.basicConfig(level=logging.INFO)
     type=str,
     help="Directory to save output files.",
 )
-def main(min_years,
+def main(
+    min_years,
     pipeline_id,
     esl_fit_statistics_file,
     resample_freq,
@@ -223,59 +214,58 @@ def main(min_years,
     target_freqs,
     output_fname,
     below_threshold,
-    output_dir
-         ):
-
+    output_dir,
+):
 
     click.echo("Hello from extremesealevel2-AFs!")
 
     # call fit preprocess function
     preproc_settings, input_locations = preprocess(
-        min_years = min_years,
-        resample_freq = resample_freq,
-        deseasonalize = deseasonalize,
-        detrend = detrend,
-        subtract_amean = subtract_amean,
-        gpd_pot_threshold = gpd_pot_threshold,
-        decluster_window = decluster_window,
-        decluster_method = decluster_method,
-        nsamps = nsamps,
-        total_localsl_file = total_localsl_file,
-        #esl_data,
-        #esl_data_path,
+        min_years=min_years,
+        resample_freq=resample_freq,
+        deseasonalize=deseasonalize,
+        detrend=detrend,
+        subtract_amean=subtract_amean,
+        gpd_pot_threshold=gpd_pot_threshold,
+        decluster_window=decluster_window,
+        decluster_method=decluster_method,
+        nsamps=nsamps,
+        total_localsl_file=total_localsl_file,
+        # esl_data,
+        # esl_data_path,
     )
     click.echo(preproc_settings.keys())
     click.echo(type(input_locations))
     message = f"pre proc settings min years: {preproc_settings['min_yrs']}"
     click.echo(message)
 
-    #esl_data, esl_data_path, total_localsl_file, preproc_settings, nsamps, f = preprocess_tuple
+    # esl_data, esl_data_path, total_localsl_file, preproc_settings, nsamps, f = preprocess_tuple
 
-    #this is the same as the fit step (?)
+    # this is the same as the fit step (?)
     message1 = f"esl data {esl_data}"
     click.echo(message1)
 
-    f= 10**np.linspace(-6,2,num=1001) #input frequencies to compute return heights for
-    f=np.append(f,np.arange(101,183))
+    f = 10 ** np.linspace(
+        -6, 2, num=1001
+    )  # input frequencies to compute return heights for
+    f = np.append(f, np.arange(101, 183))
 
-    #input_locations = open_input_locations(total_localsl_file,nsamps)
-    #Create fit ds
+    # input_locations = open_input_locations(total_localsl_file,nsamps)
+    # Create fit ds
     extremesl_fit = get_ESL_statistics(
-        esl_data = esl_data,
-        path_to_data = esl_data_path,
-        input_locations = input_locations,
-        match_dist_limit = match_lim,
-        preproc_settings = preproc_settings,
-        n_samples = nsamps,
-        f = f,
-        output_dir = output_dir)
-    #write fit ds
-    extremesl_fit.to_netcdf(
-        esl_fit_statistics_file,
-        mode='w')
+        esl_data=esl_data,
+        path_to_data=esl_data_path,
+        input_locations=input_locations,
+        match_dist_limit=match_lim,
+        preproc_settings=preproc_settings,
+        n_samples=nsamps,
+        f=f,
+        output_dir=output_dir,
+    )
+    # write fit ds
+    extremesl_fit.to_netcdf(esl_fit_statistics_file, mode="w")
 
-
-    target_freqs = np.array(str(target_freqs).split(',')).astype('float')
+    target_freqs = np.array(str(target_freqs).split(",")).astype("float")
 
     project_ESL_runner(
         quantile_min=quantile_min,
