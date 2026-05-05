@@ -24,7 +24,7 @@ mkdir -p ./data/output
 Add totaled sealevel change data to input directory. This module requires output from the [facts-total](https://github.com/fact-sealevel/facts-total). Move the file you would like to use to `./data/input`. Alternatively, you can mount a volume to the container with the directory holding the totaled output and pass the filename as an arg.
 
 
-```
+
 Build a Docker image:
 ```
 docker build -t extremesealevel2-afs .
