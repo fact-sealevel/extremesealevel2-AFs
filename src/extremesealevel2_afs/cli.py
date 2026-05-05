@@ -231,26 +231,13 @@ def main(
         decluster_method=decluster_method,
         nsamps=nsamps,
         total_localsl_file=total_localsl_file,
-        # esl_data,
-        # esl_data_path,
     )
-    click.echo(preproc_settings.keys())
-    click.echo(type(input_locations))
-    message = f"pre proc settings min years: {preproc_settings['min_yrs']}"
-    click.echo(message)
-
-    # esl_data, esl_data_path, total_localsl_file, preproc_settings, nsamps, f = preprocess_tuple
-
-    # this is the same as the fit step (?)
-    message1 = f"esl data {esl_data}"
-    click.echo(message1)
 
     f = 10 ** np.linspace(
         -6, 2, num=1001
     )  # input frequencies to compute return heights for
     f = np.append(f, np.arange(101, 183))
 
-    # input_locations = open_input_locations(total_localsl_file,nsamps)
     # Create fit ds
     extremesl_fit = get_ESL_statistics(
         esl_data=esl_data,
