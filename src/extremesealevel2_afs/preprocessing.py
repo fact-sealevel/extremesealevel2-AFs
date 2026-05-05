@@ -151,9 +151,9 @@ def reference_data_to_msl(period, data, fn):
 
 def ingest_GESLA3_files(gesla3_path, preproc_settings, fns=None):
     """open & preprocess files in list "fns" with type in "types" e.g., ['Coastal','River'] (as defined by GESLA) if fulfilling inclusion criteria set in cfg"""
-    # path_to_files = os.path.join(gesla3_path,'GESLA3.0_ALL')
-    # path_to_files = os.path.join(path_to_files,'') #append '/'
-    path_to_files = gesla3_path
+    path_to_files = os.path.join(gesla3_path, "GESLA3.0_ALL")
+    path_to_files = os.path.join(path_to_files, "")  # append '/'
+    # path_to_files = gesla3_path
     meta_fn = os.path.join(gesla3_path, "GESLA3_ALL.csv")
     resample_freq = preproc_settings["resample_freq"]
     min_yrs = preproc_settings["min_yrs"]
@@ -164,14 +164,22 @@ def ingest_GESLA3_files(gesla3_path, preproc_settings, fns=None):
         g3object = GeslaDataset(
             meta_file=meta_fn, data_path=path_to_files
         )  # create dataset class
-    except Exception as e:
-        raise Exception(f"Could not read in GESLA3 metadata file...{e}")
+    except (FileNotFoundError, PermissionError, pd.errors.ParserError, KeyError) as e:
+        raise RuntimeError(f"Could not read in GESLA3 metadata file...{e}") from e
     datasets = {}  # initialize dictionary
     for fn in fns:
         try:
             data = g3object.file_to_pandas(fn)  # data [0] + metadata [1]
-        except Exception as e:
-            print("g3object.file_to_pandas fails: ", e)
+        except (
+            FileNotFoundError,
+            PermissionError,
+            pd.errors.ParserError,
+            pd.errors.EmptyDataError,
+            ValueError,
+            IndexError,
+        ) as e:
+            print(f"g3object.file_to_pandas fails for {fn}: ", e)
+            continue
         if data[1]["gauge_type"] != "Coastal":
             continue
         if data[1]["number_of_years"] < min_yrs:
