@@ -96,13 +96,6 @@ def open_input_locations(path_to_input, num_samps):
             "Warning: no sea-level projections provided for input locations, will not be able to compute AFs."
         )
 
-    encoding = {var: {"dtype": "float64"} for var in input_locations.data_vars}
-
-    input_locations.to_netcdf(
-        os.path.join(os.path.dirname(__file__), "aaa_input_locations.nc"),
-        mode="w",
-        encoding=encoding,
-    )  # store output ds
     return input_locations
 
 

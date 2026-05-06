@@ -54,6 +54,3 @@ def preprocess(
     input_locations = open_input_locations(sl_fn, n_samples)
 
     return (preproc_settings, input_locations)
-
-    # extremesl_fit = get_ESL_statistics(esl_data,esl_data_path,input_locations,args.match_lim,preproc_settings,n_samples,f)
-    # extremesl_fit.to_netcdf(os.path.join(os.path.dirname(__file__),'{}_esl_statistics.nc'.format(args.pipeline_id)),mode='w')

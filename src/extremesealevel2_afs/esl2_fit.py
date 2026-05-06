@@ -1,5 +1,4 @@
 import pandas as pd
-import os
 import numpy as np
 from extremesealevel2_afs.I_O import (
     esl_statistics_dict_to_ds,
@@ -73,9 +72,6 @@ def get_ESL_statistics(
         )
     else:
         raise Exception("ESL input data type not recognized.")
-    esl_statistics.to_netcdf(
-        os.path.join(os.path.dirname(__file__), "aaa_ESL_statistics_ds.nc"), mode="w"
-    )  # store output ds
 
     return esl_statistics
 
