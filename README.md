@@ -15,7 +15,11 @@ First, download required input data and place it in a `data/input` sub-directory
 ```
 # Make input data dir
 mkdir -p ./data/input
-#TODO ADD curl for zenodo record once ready
+
+# Download input data
+curl -sL https://zenodo.org/records/20296846/files/extremesealevel2_AFs_fulldata.tgz | tar -zx -C ./data/input
+curl -sL https://zenodo.org/records/20296846/extremesealevel2_AFs_fulldata.tgz | tar -zx -C ./data/input
+
 
 # Make output data dir
 mkdir -p ./data/output
