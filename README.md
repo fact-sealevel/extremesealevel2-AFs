@@ -18,8 +18,6 @@ mkdir -p ./data/input
 
 # Download input data
 curl -sL https://zenodo.org/records/20296846/files/extremesealevel2_AFs_fulldata.tgz | tar -zx -C ./data/input
-curl -sL https://zenodo.org/records/20296846/extremesealevel2_AFs_fulldata.tgz | tar -zx -C ./data/input
-
 
 # Make output data dir
 mkdir -p ./data/output
