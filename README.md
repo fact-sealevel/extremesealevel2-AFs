@@ -37,13 +37,13 @@ Then, run the application in a Docker container based on the image
 
 ```shell
 docker run --rm \
--v ./data/input:/mnt/data_in \
--v ./data/output:/mnt/data_out \
+-v "./data/input:/mnt/data_in" \
+-v "./data/output:/mnt/data_out" \
 extremesealevel2-afs \
---pipeline-id aaa \
---esl-fit-statistics-file /mnt/data_out/esl_fit_statistics_ds.nc \
+--pipeline-id "aaa" \
+--esl-fit-statistics-file "/mnt/data_out/esl_fit_statistics_ds.nc" \
 --min-years 20 \
---resample-freq 'D_max' \
+--resample-freq "D_max" \
 --deseasonalize 1 \
 --detrend 1 \
 --subtract-amean 0 \
@@ -52,18 +52,18 @@ extremesealevel2-afs \
 --decluster-window 3 \
 --decluster-method "rolling_max" \
 --nsamps 1000 \
---total-localsl-file /mnt/data_in/all-modules_local_total.nc \
+--total-localsl-file "/mnt/data_in/all-modules_local_total.nc" \
 --esl-data "gesla3_data" \
---esl-data-path /mnt/data_in/extremesealevel2_AFs_fulldata/esl_data/gesla3_data \
+--esl-data-path "/mnt/data_in/extremesealevel2_AFs_fulldata/esl_data/gesla3_data" \
 --quantile-min 0.01 \
 --quantile-max 0.99 \
 --quantile-step 0.01 \
 --reffreq-data "custom" \
---reffreq-data-file /mnt/data_in/extremesealevel2_AFs_fulldata/refFreqs/flopros_estimates_at_coastrp_locations.nc \
+--reffreq-data-file "/mnt/data_in/extremesealevel2_AFs_fulldata/refFreqs/flopros_estimates_at_coastrp_locations.nc" \
 --target-AFs 20 \
---output-fname /mnt/data_out/project_ESL_output.nc \
---output-dir /mnt/data_int \
---below-threshold mhhw
+--output-fname "/mnt/data_out/project_ESL_output.nc" \
+--output-dir "/mnt/data_int" \
+--below-threshold "mhhw"
 ```
 
 ## Features 
