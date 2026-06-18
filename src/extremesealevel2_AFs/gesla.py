@@ -1,9 +1,9 @@
 import pandas as pd
 import xarray as xr
-import warnings
+import os
+# python script downloaded from https://gesla787883612.wordpress.com/downloads/
+# TH: adapted to fix some bugs
 
-#python script downloaded from https://gesla787883612.wordpress.com/downloads/
-#TH: adapted to fix some bugs
 
 class GeslaDataset:
     """A class for loading data from GESLA text files into convenient in-memory
@@ -29,24 +29,34 @@ class GeslaDataset:
             .lower()
             for c in self.meta.columns
         ]
-        self.meta.loc[:, "start_date_time"] = [
-            pd.to_datetime(d,format='mixed') for d in self.meta.loc[:, "start_date_time"]
-        ]
-        self.meta.loc[:, "end_date_time"] = [
-            pd.to_datetime(d,format='mixed') for d in self.meta.loc[:, "end_date_time"]
-        ]
+        try:
+            self.meta.loc[:, "start_date_time"] = [
+                d for d in self.meta.loc[:, "start_date_time"]
+            ]
+        except Exception as e:
+            print("didnt format start_date_time correctly: ", e)
+        try:
+            self.meta.loc[:, "end_date_time"] = [
+                # pd.to_datetime(d,format='mixed') for
+                d
+                for d in self.meta.loc[:, "end_date_time"]
+            ]
+        except Exception as e:
+            print("didnt format end date time correctly...", e)
         self.data_path = data_path
         self.meta["filename"] = self.construct_filenames()
 
     def construct_filenames(self):
         return self.meta.apply(
-            lambda x: x.loc["site_name"].lower()
-            + "-"
-            + x.loc["site_code"].lower()
-            + "-"
-            + x.loc["country"].lower()
-            + "-"
-            + x.loc["contributor_abbreviated"].lower(),
+            lambda x: (
+                x.loc["site_name"].lower()
+                + "-"
+                + x.loc["site_code"].lower()
+                + "-"
+                + x.loc["country"].lower()
+                + "-"
+                + x.loc["contributor_abbreviated"].lower()
+            ),
             axis=1,
         )
 
@@ -64,26 +74,33 @@ class GeslaDataset:
             pandas.Series: record metadata. This return can be excluded by
                 setting return_meta=False.
         """
-        with open(self.data_path + filename, "r") as f:
+        full_path = os.path.join(self.data_path, filename)
+
+        # with open(self.data_path + filename, "r") as f:
+        with open(full_path, "r") as f:
             data = pd.read_csv(
                 f,
                 skiprows=41,
                 names=["date", "time", "sea_level", "qc_flag", "use_flag"],
                 sep="\s+",
-                parse_dates=[[0, 1]],
-                index_col=0,
+                # parse_dates=[[0, 1]],
+                # index_col=0,
             )
+            data["date_time"] = pd.to_datetime(data["date"] + " " + data["time"])
+            data = data.set_index("date_time").drop(columns=["date", "time"])
             if data.index[data.index.duplicated()].size > 0:
-                #data = data.drop_duplicates() #this removes any duplicate row, rather than duplicate timestamps
-                data = data[~data.index.duplicated(keep='first')]
-                
+                # data = data.drop_duplicates() #this removes any duplicate row, rather than duplicate timestamps
+                data = data[~data.index.duplicated(keep="first")]
+
             if return_meta:
                 try:
-                    meta = self.meta.loc[self.meta['file_name'] == filename].iloc[0]
-                except:
+                    meta = self.meta.loc[self.meta["file_name"] == filename].iloc[0]
+                except KeyError as e:
+                    # GESLA v2 uses 'filename', v3 uses 'file_name'; fall back to v2 column name
+                    print(
+                        f"Warning: 'file_name' column not found in meta, falling back to 'filename': {e}"
+                    )
                     meta = self.meta.loc[self.meta.filename == filename].iloc[0]
-                #print(self.meta.filename[2495])
-                #meta = self.meta.loc[self.meta.filename == filename].iloc[0]
                 return data, meta
             else:
                 return data
@@ -99,16 +116,11 @@ class GeslaDataset:
             xarray.Dataset: data, flags, and metadata for each record.
         """
         data = xr.concat(
-            [
-                self.file_to_pandas(f, return_meta=False).to_xarray()
-                for f in filenames
-            ],
+            [self.file_to_pandas(f, return_meta=False).to_xarray() for f in filenames],
             dim="station",
         )
 
-        idx = [
-            s.Index for s in self.meta.itertuples() if s.filename in filenames
-        ]
+        idx = [s.Index for s in self.meta.itertuples() if s.filename in filenames]
         meta = self.meta.loc[idx]
         meta.index = range(meta.index.size)
         meta.index.name = "station"
@@ -186,9 +198,7 @@ class GeslaDataset:
             lon_bool = (self.meta.longitude >= west_lon) & (
                 self.meta.longitude <= east_lon
             )
-        lat_bool = (self.meta.latitude >= south_lat) & (
-            self.meta.latitude <= north_lat
-        )
+        lat_bool = (self.meta.latitude >= south_lat) & (self.meta.latitude <= north_lat)
         meta = self.meta.loc[lon_bool & lat_bool]
 
         if (meta.index.size > 1) or force_xarray:
