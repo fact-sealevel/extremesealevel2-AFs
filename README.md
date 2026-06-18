@@ -26,7 +26,7 @@ curl -sL https://zenodo.org/records/20296846/files/extremesealevel2_AFs_fulldata
 mkdir -p ./data/output
 ```
 
-Add totaled sealevel change data to input directory. This module requires output from the [facts-total](https://github.com/fact-sealevel/facts-total). Move the file you would like to use to `./data/input`. Alternatively, you can mount a volume to the container with the directory holding the totaled output and pass the filename as an arg.
+This module requires output from the [facts-total](https://github.com/fact-sealevel/facts-total). We have provided sample data to use in order to run the example below. To run with different inputs, replace `--total-localsl-file` with the path to your desired file. 
 
 Build a Docker image:
 ```
@@ -52,7 +52,7 @@ extremesealevel2-afs \
 --decluster-window 3 \
 --decluster-method "rolling_max" \
 --nsamps 1000 \
---total-localsl-file "/mnt/data_in/all-modules_local_total.nc" \
+--total-localsl-file "/mnt/data_in/fake_local_total.nc" \
 --esl-data "gesla3_data" \
 --esl-data-path "/mnt/data_in/extremesealevel2_AFs_fulldata/esl_data/gesla3_data" \
 --quantile-min 0.01 \
