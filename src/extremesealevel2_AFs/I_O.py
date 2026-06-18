@@ -8,7 +8,7 @@ import xarray as xr
 import pandas as pd
 import yaml
 import os
-from extremesealevel2_AFs.utils import mindist, kmdist
+from extremesealevel2_afs.utils import mindist, kmdist
 from tqdm import tqdm
 
 
@@ -536,7 +536,7 @@ def open_gpd_parameters(
         )
 
     elif input_data == "kirezci2020":
-        from extremesealevel2_AFs.esl_analysis import infer_avg_extr_pyear
+        from extremesealevel2_afs.esl_analysis import infer_avg_extr_pyear
 
         """open GPD parameters from Kirezci et al. (2020) and find parameters nearest to queried input_locations"""
         gpd_params = pd.read_csv(data_path)
@@ -601,7 +601,7 @@ def open_gpd_parameters(
             }
         )
     elif input_data == "vousdoukas2018":
-        from extremesealevel2_AFs.esl_analysis import infer_avg_extr_pyear
+        from extremesealevel2_afs.esl_analysis import infer_avg_extr_pyear
 
         """open GPD parameters from Vousdoukas et al. (2018) and find parameters nearest to queried input_locations"""
         gpd_params = xr.open_dataset(data_path).isel(rlyear=0, drop=True)

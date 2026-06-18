@@ -1,22 +1,22 @@
 import pandas as pd
 import numpy as np
-from extremesealevel2_AFs.I_O import (
+from extremesealevel2_afs.I_O import (
     get_refFreqs,
     lazy_output_to_ds,
 )
 import dask
-from extremesealevel2_AFs.esl_analysis import (
+from extremesealevel2_afs.esl_analysis import (
     multivariate_normal_gpd_samples_from_covmat,
     get_return_curve_gpd,
 )
-from extremesealevel2_AFs.projecting import compute_AFs, compute_AF_timing
-from extremesealevel2_AFs.utils import if_scalar_to_list
+from extremesealevel2_afs.projecting import compute_AFs, compute_AF_timing
+from extremesealevel2_afs.utils import if_scalar_to_list
 from dask.distributed import LocalCluster
 
 # Do not warn about chained assignments
 pd.options.mode.chained_assignment = None  # default='warn'
 
-""" extremesealevel2_AFs_project.py
+""" extremesealevel2_afs_project.py
 written by: Tim Hermans t.h.j.hermans@uu.nl (May 2024)
 Projecting stage of extremesealevel2 module of FACTS.
 """

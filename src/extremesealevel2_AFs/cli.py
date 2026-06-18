@@ -1,16 +1,16 @@
 import click
 import logging
 import numpy as np
-from extremesealevel2_AFs.esl2_afs_preprocess import preprocess
+from extremesealevel2_afs.extremesealevel2_AFs_preprocess import preprocess
 
 
-from extremesealevel2_AFs.esl2_fit import (
+from extremesealevel2_afs.extremesealevel2_AFs_fit import (
     get_ESL_statistics,
 )
 
 
 
-from extremesealevel2_AFs.esl2_project import project_ESL_runner
+from extremesealevel2_afs.extremesealevel2_AFs_project import project_ESL_runner
 
 
 logger = logging.getLogger(__name__)

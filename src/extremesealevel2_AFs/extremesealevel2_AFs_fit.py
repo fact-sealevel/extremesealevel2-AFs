@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
-from extremesealevel2_AFs.I_O import (
+from extremesealevel2_afs.I_O import (
     esl_statistics_dict_to_ds,
     open_gpd_parameters,
     get_coast_rp_return_curves,
 )
-from extremesealevel2_AFs.esl_analysis import (
+from extremesealevel2_afs.esl_analysis import (
     ESL_stats_from_raw_GESLA,
     ESL_stats_from_gtsm_dmax,
 )
@@ -13,7 +13,7 @@ from extremesealevel2_AFs.esl_analysis import (
 # Do not warn about chained assignments
 pd.options.mode.chained_assignment = None  # default='warn'
 
-""" extremesealevel2_AFs_fit.py
+""" extremesealevel2_afs_fit.py
 written by: Tim Hermans t.h.j.hermans@uu.nl (May 2024)
 Fitting stage of extremesealevel2 module of FACTS.
 """

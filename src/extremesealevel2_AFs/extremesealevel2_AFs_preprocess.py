@@ -1,5 +1,5 @@
 import numpy as np
-from extremesealevel2_AFs.I_O import (
+from extremesealevel2_afs.I_O import (
     open_input_locations,
 )
 

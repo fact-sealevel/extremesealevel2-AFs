@@ -8,25 +8,25 @@ import numpy.matlib
 import pandas as pd
 import xarray as xr
 from scipy.stats import genpareto
-from extremesealevel2_AFs.utils import mindist
+from extremesealevel2_afs.utils import mindist
 from tqdm import tqdm
-from extremesealevel2_AFs.preprocessing import (
+from extremesealevel2_afs.preprocessing import (
     extract_GESLA2_locations,
     extract_GESLA3_locations,
     ingest_GESLA2_files,
     ingest_GESLA3_files,
 )
-from extremesealevel2_AFs.preprocessing import (
+from extremesealevel2_afs.preprocessing import (
     detrend_gesla_dfs,
     deseasonalize_gesla_dfs,
     subtract_amean_from_gesla_dfs,
 )
-from extremesealevel2_AFs.preprocessing import (
+from extremesealevel2_afs.preprocessing import (
     detrend_ds,
     deseasonalize_ds,
     subtract_amean_from_ds,
 )
-from extremesealevel2_AFs.I_O import open_gtsm_waterlevels
+from extremesealevel2_afs.I_O import open_gtsm_waterlevels
 import os
 
 
